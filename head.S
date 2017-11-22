@@ -188,6 +188,8 @@ not_angel:
 
 		.text
 
+		/* 171122 : 여기까지 진도  */
+
 #ifdef CONFIG_AUTO_ZRELADDR
 		/*
 		 * Find the start of physical memory.  As we are executing
