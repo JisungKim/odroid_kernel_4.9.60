@@ -24,6 +24,13 @@
  * 100% relocatable.  Any attempt to do so will result in a crash.
  * Please select one of the following when turning on debugging.
  */
+
+
+/* IAMROOT-14E:
+ * ------
+ * Define the loadsp, writeb macro according to the debug configuration.
+ */
+
 #ifdef DEBUG
 
 #if defined(CONFIG_DEBUG_ICEDCC)
@@ -114,6 +121,11 @@
 #endif
 		.endm
 
+/* IAMROOT-14E:
+ * ------
+ * From here, define .start section
+ */
+
 		.section ".start", #alloc, #execinstr
 /*
  * sort out different calling conventions
@@ -126,6 +138,17 @@
 		 */
  AR_CLASS(	.arm	)
 start:
+
+/* IAMROOT-14E:
+ * ------
+ * Define start label as a function,
+ * Due to the kernel design, the starting code begins from 32byte, thus conduct 8 repetition for the next instruction.
+ * The first code is to jump to the label "1" forward.
+ *
+ * label "1" do-
+ *   the description of which role the label "1" does
+ */
+
 		.type	start,#function
 		.rept	7
 		__nop
@@ -141,6 +164,13 @@ start:
 		.word	0x04030201	@ endianness flag
 
  THUMB(		.thumb			)
+
+/* IAMROOT-14E:
+ * ------
+ * What is EFI_HEADER?
+ * What does __hyp_stub_install do?
+ */
+
 1:		__EFI_HEADER
 
  ARM_BE8(	setend	be		)	@ go BE8 if compiled for BE8
@@ -163,6 +193,14 @@ start:
 		mov	r0, #0x17		@ angel_SWIreason_EnterSVC
  ARM(		swi	0x123456	)	@ angel_SWI_ARM
  THUMB(		svc	0xab		)	@ angel_SWI_THUMB
+
+
+/* IAMROOT-14E:
+ * ------
+ * What is safe_svcmode_maskall
+ * cpsr is in the r9
+ */
+
 not_angel:
 		safe_svcmode_maskall r0
 		msr	spsr_cxsf, r9		@ Save the CPU boot mode in
