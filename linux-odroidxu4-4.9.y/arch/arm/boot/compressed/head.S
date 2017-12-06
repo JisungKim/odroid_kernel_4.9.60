@@ -250,10 +250,18 @@ not_angel:
 		 * Given that r4 > &_end is most unfrequent, we add a rough
 		 * additional 1MB of room for a possible appended DTB.
 		 */
+
+/* IAMROOT-14E:
+ * ------
+ * ARM Assembly revisit
+ * cmp r0, r4 : 
+ * r4 => zreladdr
+ * r0 => pc
+ */
 		mov	r0, pc
 		cmp	r0, r4
-		ldrcc	r0, LC0+32
-		addcc	r0, r0, pc
+		ldrcc	r0, LC0+32     @ _end - restart + 16384 + 1024*1024
+		addcc	r0, r0, pc     @ 
 		cmpcc	r4, r0
 		orrcc	r4, r4, #1		@ remember we skipped cache_on
 		blcs	cache_on
