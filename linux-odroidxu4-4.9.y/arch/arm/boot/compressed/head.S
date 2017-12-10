@@ -29,6 +29,20 @@
 /* IAMROOT-14E:
  * ------
  * Define the loadsp, writeb macro according to the debug configuration.
+ * DEBUG kernel config를 enable하였을 때 각 ARM 아키텍쳐별로  loadsp, writeb 매크로를 정의한다.
+ * 처리하고 있는 디버그 옵션은 아래와 같다.
+ * 	
+ * - 정의되는 함수:
+ * loadsp, writeb
+ *
+ * 		1. ICEDCC
+ * 		바로 loadsp, writeb 함수 정의
+ *
+ * 		2. NON-ICEDCC
+ * 		CONFIG_DEBUG_LL_INCLUDE를 enable하고 loadsp, writeb 정의
+ * 		TODO:CONFIG_ARCH_SA1100, DEBUG_LL_SER3이 어떻게 다르길래 loadsp 매크로를 따로 정의하는지
+ *
+ * TODO: mcr p14, 0, \ch, c0, c5, 0 연산 분석
  */
 
 #ifdef DEBUG
@@ -80,6 +94,17 @@
 #endif
 #endif
 
+/* IAMROOT-14E:
+ * ------
+ * kputc, kphex 매크로 정의
+ *
+ * 정의되는 함수: kputc, kphex
+ * 함수 역할 : 
+ *
+ * 		1. kputc : r0 에 val을 넣고 TODO: putc로 branch with link
+ * 		2. kphex : r0 에 val을 넣고 TODO: phex로 branch with link
+ */
+
 		.macro	kputc,val
 		mov	r0, \val
 		bl	putc
@@ -90,6 +115,35 @@
 		mov	r1, #\len
 		bl	phex
 		.endm
+
+
+/* IAMROOT-14E:
+ * ------
+ * 정의되는 함수 : debug_reloc_start, debug_reloc_end
+ * 함수 역할 : 
+ *
+ *  	- DEBUG가 enable된 상태에서만 매크로가 정의됨.
+ *  	1. debug_reloc_start : 
+ *  	"
+ *  	{PROCESSOR ID}:{ARCHITECTURE ID}:{[CP15 있을 경우]CONTROL REGISTER}
+ *  	{DECOMPRESSED KERNEL START}-{DECOMPRESSED KERNEL END}>{KERNEL EXECUTION ADDRESS}
+ *		"
+ *		를 출력하는것으로 TODO: 예상됨
+ *  	2. debug_reloc_end
+ *
+ * TODO:
+ *  (*) r0 : cp15의 어느 레지스터에 control register가 있는지
+ *  	r4 : kernel excution address (zreladdress)
+ *  	r5 : decompressed kernel start
+ *  	r6 : processor id
+ *  	r7 : architecture id
+ *  	r9 : decompressed kernel end
+ *
+ *  1. 위 레지스터들이 어떻게/어디에서 정의되는지 궁금
+ *  2. kphex가 8byte씩을 쓰는 것 같은데, 지금 ARM Code가 64bit machine 기준인지 궁금
+ *
+ */
+
 
 		.macro	debug_reloc_start
 #ifdef DEBUG
@@ -121,9 +175,18 @@
 #endif
 		.endm
 
+
 /* IAMROOT-14E:
  * ------
- * From here, define .start section
+ * .start 섹션의 시작 선언.
+ * .start 섹션에 아래 코드들을 때려넣는다는 의미로 실행상의 의미는 TODO: linker descriptor에서 부여하는걸로 보임
+ * vmlinux.lds.S에 .text영역은 .start서부터 시작하는데 의미심장한듯.
+ *
+ * TODO: 
+ * 1. .section ".start", #alloc, #execinstr의 해석
+ * 2. vmlinux.lds.S를 zImage linking작업에서의 linker descriptor로 이용하는지 확인해볼 것
+ * 3. .align의 기능
+ * 4. AR_CLASS, ARM, THUMB 함수의 기능
  */
 
 		.section ".start", #alloc, #execinstr
@@ -141,12 +204,19 @@ start:
 
 /* IAMROOT-14E:
  * ------
- * Define start label as a function,
- * Due to the kernel design, the starting code begins from 32byte, thus conduct 8 repetition for the next instruction.
- * The first code is to jump to the label "1" forward.
+ * TODO: start 레이블을 함수로 정의하고(아까 .section 정의와 뭐가 다른지),
+ * TODO: 어떤 이유에서인지 전통적으로 시작은 32byte 이후부터 시작하게 되었음
+ * 따라서 __nop과 mov r0, r0 실행을 8번 해서 32byte를 맞춘 뒤 실제 수행 코드를 삽입해둠.
+ * 1 레이블로 점프를 뛰는데, 1 레이블은 TODO: 라는 역할을 함.
  *
- * label "1" do-
- *   the description of which role the label "1" does
+ * 정의되는 상수 : _magic_sig, _magic_ start, _magic_end, endianness flag
+ *
+ * 	TODO: 아래 내용 확인
+ * 		1. _magic_sig : zImage base+40byte에 위치
+ * 		2. _magic_start : zImage base+44byte에 위치
+ * 		3. _magic_end : zImage base+48byte에 위치
+ *
+ * TODO: THUMB (badr r12, 1f), THUMB( bx r12 )는 무슨 동작을 하는건지?
  */
 
 		.type	start,#function
@@ -165,10 +235,26 @@ start:
 
  THUMB(		.thumb			)
 
+
 /* IAMROOT-14E:
  * ------
- * What is EFI_HEADER?
- * What does __hyp_stub_install do?
+ * 레이블 1의 시작.
+ * ARM_VIRT_EXT가 정의되면 __hyp_stub_install을 실행하게 되고 TODO: Angel 디버거 사용 여부에 따라
+ * 다르게 모드 전환을(TODO: 어디로? 아마도 Supervisor) 시킴
+ *
+ * Register:
+ *  1. r1 = Architecture ID
+ *  2. r2 = atags Pointer
+ *  3. r7 = Architecture ID
+ *  4. r8 = atags Pointer
+ *
+ * TODO:
+ * 	1. __EFI_HEADER의 역할 (이렇게도 instruction이 구성되는지 매우 신기)
+ * 	2. __hyp_stub_install의 역할
+ * 	3. ARM_BE8 (stend be)의 역할
+ * 	4. AR_CLASS (mrs r9, cpsr)의 역할
+ * 	5. not_angel의 의미
+ * 	6. safe_svcmode_maskall ?
  */
 
 1:		__EFI_HEADER
@@ -195,12 +281,6 @@ start:
  THUMB(		svc	0xab		)	@ angel_SWI_THUMB
 
 
-/* IAMROOT-14E:
- * ------
- * What is safe_svcmode_maskall
- * cpsr is in the r9
- */
-
 not_angel:
 		safe_svcmode_maskall r0
 		msr	spsr_cxsf, r9		@ Save the CPU boot mode in
@@ -215,6 +295,23 @@ not_angel:
 		 * some architecture specific code can be inserted
 		 * by the linker here, but it should preserve r7, r8, and r9.
 		 */
+
+/* IAMROOT-14E:
+ * ------
+ * .text 섹션의 시작. 먼저 zImage의 vmlinux를 어디에 압축해제할지 정한다.
+ * 정하는 방식은 자동과 수동 두 가지 방식이 있는데 방식은 커널 Configuration에서 정할 수 있다.
+ *
+ * 	1. 자동
+ *	현재 zImage 수행 코드가 있는 128M(#F8000000) 블록의 첫 주소를 잡은 뒤 TEXT_OFFSET을 더한 주소를 zreladdr로 이용한다.
+ *	TODO: 영문 코멘트 번역
+ *
+ * 	2. 수동
+ * 	수동으로 정의된 zreladdr을 이용 (TODO: 스터디 당시 빌드 옵션으로 직접 지정가능하다고 함)
+ *
+ * TODO:
+ *  1. zreladdr의 기원 (부트로더?)
+ *  2. TEXT_OFFSET의 기원
+ */
 
 		.text
 
@@ -251,17 +348,29 @@ not_angel:
 		 * additional 1MB of room for a possible appended DTB.
 		 */
 
+
 /* IAMROOT-14E:
  * ------
- * ARM Assembly revisit
- * cmp r0, r4 : 
- * r4 => zreladdr
- * r0 => pc
+ * r4: zreladdr에 정의된 시작 주소를 기준으로 MMU On을 위한 Page table이 구성 가능한지 확인한다.
+ * r4가 현재 pc보다 크면 MMU On 이전 페이지 테이블을 구성하다가 zImage를 깨먹을 수도 있으므로 TODO: 적절히 처리한다.
+ * r4가 현재 pc보다 작으면 Page Table을 구성하다가 zImage를 깨먹을 일이 없으므로 cahe_on으로 branch with link.
+ * 적절한 조건이 갖춰지지 않으면 cache_on을 스킵하고, r4(zreladdr) LSB에 1을 tick해서 cache_on 수행을 건너뛰었음을 알려줌.
+ * TODO: zreladdr를 수동으로 정의하는데 만약 r4 LSB가 1이면 cache를 안 켜겠네?
+ *
+ * 사용한 변수:
+ * 	LC0+32 : 아래 LC0레이블부터 32byte뒤, _end-restart+16384+1024*1024를 뜻함.
+ *
+ * TODO:
+ * 	1. cmp r0, r4의 결과 :
+ * 		(해결) r0 - r4, borrow가 생기면 Carry. ARM에서는 borrow carry는 0이므로 r4가 더 클 때
+ * 		아래의 cc instruction들을 수행하게 된다.
+ * 	2. r4가 더 큰 경우 충분한 용량을 잡는건 알겠는데, addcc, cmpcc, orrcc, blcs에 해당하는 16byte는 왜 무시하는지
  */
+
 		mov	r0, pc
 		cmp	r0, r4
-		ldrcc	r0, LC0+32     @ _end - restart + 16384 + 1024*1024
-		addcc	r0, r0, pc     @ 
+		ldrcc	r0, LC0+32
+		addcc	r0, r0, pc
 		cmpcc	r4, r0
 		orrcc	r4, r4, #1		@ remember we skipped cache_on
 		blcs	cache_on
