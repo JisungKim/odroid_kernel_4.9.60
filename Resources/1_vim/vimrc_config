@@ -1,4 +1,16 @@
-" vim setting
+" IAMROOT 14차 E팀 커널 분석 환경설정 (~/.vimrc)
+"
+" [ARM으로 배우는 리눅스 커널]
+" VIM 플러그인 리스트 : taglist, NERD Tree, Source Explorer
+" 이외 : ctags, cscope
+"
+" F7 : Toggle Taglist
+" F8 : Toggle Source Explorer
+" F9 : Toggle NERD Tree
+" <Ctrl-H> : 왼쪽으로 커서 옮김
+" <Ctrl-L> : 오른쪽으로 커서 옮김
+" <Ctrl-J> : 아래쪽으로 커서 옮김
+" <Ctrl-K> : 위쪽으로 커서 옮김
 
 set nu
 set ai
@@ -38,6 +50,9 @@ let g:SrcExpl_isUpdateTags = 0
 
 let NERDTreeWinPos = "left"
 nmap <F9> :NERDTreeToggle<CR>
+
+" [IAMROOT 12차 ??팀 커널 분석 환경 참고]
+" F6키를 누르면 코멘트 양식이 자동으로 달림
 
 set hlsearch
 set formatoptions+=r

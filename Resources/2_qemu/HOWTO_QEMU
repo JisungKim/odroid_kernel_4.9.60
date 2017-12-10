@@ -1,0 +1,29 @@
+QEMU, GDB를 이용한 ARM ASSEMBLY 실습
+
+필요한 프로그램(TODO):
+	1. arm-none-eabi-gcc
+	2. arm-none-eabi-gdb
+	sudo apt-get install arm-none-eabi-gcc
+	sudo apt-get install arm-none-eabi-gdb
+
+ARM Assembly Code 컴파일 방법:
+	arm-none-eabi-as empty.S -o empty.o
+	arm-none-eabi-ld empty.o -o empty
+
+ARM Assembly Code 컴파일 방법(Debugging Symbol 추가된 바이너리):
+	arm-none-eabi-as empty.S -g -o empty.o
+	arm-none-eabi-ld empty.o -o empty
+
+ARM Assembly Code를 Line-by-line으로 GDB Debugging:
+	(Debugging symbol이 있는 실행파일) empty
+	qemu-arm -singlestep -g 1234 empty
+
+	arm-none-eabi-gdb
+	(gdb) file empty
+	(gdb) target remote localhost:1234 (OR target remote :1234)
+
+TODO:
+	GDB 사용방법
+
+[참고자료]
+doppioandante.github.io/2015/10/Simple-ARM-programming-on-linux.html

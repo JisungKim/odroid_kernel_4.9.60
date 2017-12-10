@@ -1,0 +1,14 @@
+[목차]
+
+1. HOWTO_QEMU
+	QEMU를 이용한 ARM Assembly 디버깅 방법 수록
+
+2. 1_Carry_Lab/
+	addcc, addcs등 ARM Instruction의 조건연산 중
+	cc(Carry Clear), cs(Carry Set)의 동작이 불분명하여 테스트함.
+	결과 :
+		ARM architecture에서는 Subtraction연산 시 Carry Set 기준이 조금 다름.
+		Overflow나 Borrow 발생 시 Carry가 일어나는 게 보통이나, ARM은 Borrow 발생 시에 Carry를 unset, 발생하지 않으면 set함.
+		상기 기준으로 봤을 때 조건은 아래와 같이 상식적으로 실행됨
+		cc - Carry clear일 경우 실행
+		cs - Carry set일 경우 실행
