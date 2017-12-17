@@ -763,6 +763,13 @@ params:		ldr	r0, =0x10000100		@ params_phys for RPC
  * This routine must preserve:
  *  r4, r7, r8
  */
+
+/* IAMROOT-14E:
+ * ------
+ * TODO:
+ * 1. cache_on 레이블로 점프했을 때 .align 5도 실행되는가?
+ * 2. align이 어떤 역할을 하는지?
+ */
 		.align	5
 cache_on:	mov	r3, #8			@ cache_on function
 		b	call_cache_fn
@@ -992,6 +999,13 @@ __common_mmu_cache_on:
  *  r12 = corrupted
  */
 
+/* IAMROOT-14E:
+ * ------
+ * TODO:
+ * [문c블로그] r9는 MIDR을 가지고 있다고 하는데 MIDR의 뜻은 뭘까요?
+ * MIDR : Main ID Register ; CPU 정보를 포함함- 코어 갯수 등을 가지고 있음
+ */
+
 call_cache_fn:	adr	r12, proc_types
 #ifdef CONFIG_CPU_CP15
 		mrc	p15, 0, r9, c0, c0	@ get processor ID
@@ -1039,7 +1053,7 @@ proc_types:
 		.word	0xff00f000
 		mov	pc, lr
  THUMB(		nop				)
-		mov	pc, lr
+			mov	pc, lr
  THUMB(		nop				)
 		mov	pc, lr
  THUMB(		nop				)
@@ -1159,6 +1173,12 @@ proc_types:
 		W(b)	__armv6_mmu_cache_on
 		W(b)	__armv4_mmu_cache_off
 		W(b)	__armv6_mmu_cache_flush
+
+/* IAMROOT-14E:
+ * ------
+ * TODO:
+ * 1. W(b)의 의미
+ */
 
 		.word	0x000f0000		@ new CPU Id
 		.word	0x000f0000
