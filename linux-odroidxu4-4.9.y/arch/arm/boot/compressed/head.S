@@ -836,11 +836,28 @@ __armv3_mpu_cache_on:
 		mcr	p15, 0, r0, c7, c0, 0	@ invalidate whole cache v3
 		mov	pc, lr
 
+/* IAMROOT-14E:
+ * ------
+ * CB_BIT 0x08(0b0100) : Cacheable (X) Bufferable (O) -> Noncached nonbuffered
+ * CB_BIT 0x0c(0b1100) : Cacheable (O) Bufferable (O) -> Write-back cacheable
+ *
+ * TODO:
+ * 왜 D-CACHE의 WRITETHROUGH, WRITEBACK만 확인하는가?
+ * Writeback, Writethrough가 어떨 때 수행되는지(어떤 효과로 정책을 결정하게 되는지) 리뷰
+ * - Cache, Buffer bit에 따라서
+ */
+
 #ifdef CONFIG_CPU_DCACHE_WRITETHROUGH
 #define CB_BITS 0x08
 #else
 #define CB_BITS 0x0c
 #endif
+
+/* IAMROOT-14E:
+ * ------
+ * TODO:
+ * bic r3, r3 시에 #0x3fff로 bit clear 하지 않는 이유는?
+ */
 
 __setup_mmu:	sub	r3, r4, #16384		@ Page directory size
 		bic	r3, r3, #0xff		@ Align the pointer
@@ -916,6 +933,29 @@ __armv4_mmu_cache_on:
 #endif
 		mov	pc, r12
 
+/* IAMROOT-14E:
+ * ------
+ * 링크 레지스터는 cache_on 이전의 레이블을 가르킴 (restart label 바로 앞)
+ * ODROID XU4 SPEC
+ * 	Samsung Exynos 5422, Main Processor Cortex-A15.
+ * r6 : Section descriptor 내용을 채우는 임시 레지스터
+ * 임시 페이지 테이블을 1MB단위로 구성하기 때문에 Section Descriptor로 페이지 테이블이 구성됨
+ * (2레벨로 넘어가게 되면 Page Table Entry Descriptor가 들어가게 됨)
+ * r6 Register Section descriptor에는 결국 Cacheable, Bufferable, !XN정보만 들어가게 됨.
+ *
+ * REVIEW:
+ * Section Descriptor
+ * L1 Page Table의 기본 구성단위 (1MB)
+ * Fine Page, Coarse Page (TODO)
+ * L2 Page Table의 기본 구성단위 (?KB)
+ *
+ * MMFR : Memory Model Feature Register
+ * VMSA : Virtual Memory System Architecture
+ *
+ * TODO:
+ * tst r11, #0xf에서 Cortex-A15 Datasheet는 0x5가 VMSA 지원인 것 같은데, 왜 0xf를 test하는지?
+ */
+
 __armv7_mmu_cache_on:
 		mov	r12, lr
 #ifdef CONFIG_MMU
@@ -926,6 +966,7 @@ __armv7_mmu_cache_on:
 		mov	r0, #0
 		mcr	p15, 0, r0, c7, c10, 4	@ drain write buffer
 		tst	r11, #0xf		@ VMSA
+		/* TODO: 무슨 일을 하는가? Invalidate entire Unified TLB */
 		mcrne	p15, 0, r0, c8, c7, 0	@ flush I,D TLBs
 #endif
 		mrc	p15, 0, r0, c1, c0, 0	@ read control reg
