@@ -3,8 +3,11 @@ QEMU, GDB를 이용한 ARM ASSEMBLY 실습
 필요한 프로그램(TODO):
 	1. arm-none-eabi-gcc
 	2. arm-none-eabi-gdb
-	sudo apt-get install arm-none-eabi-gcc
-	sudo apt-get install arm-none-eabi-gdb
+	sudo apt-get install gcc-arm-none-eabi
+	sudo apt-get install gdb-arm-none-eabi
+	3. ARM QEMU
+	sudo apt-get install qemu-system-arm
+	sudo apt-get install qemu-user
 
 ARM Assembly Code 컴파일 방법:
 	arm-none-eabi-as empty.S -o empty.o
