@@ -375,8 +375,28 @@ not_angel:
 		orrcc	r4, r4, #1		@ remember we skipped cache_on
 		blcs	cache_on
 
+/* IAMROOT-14E:
+ * ------
+ * LC0의 각 값들을 레지스터에 넣는다.
+ * r1 : LC0
+ * r2 : __bss_start
+ * r3 : _end
+ * r6 : _edata - compressed kernel의 data영역 끝 주소
+ * r10 : input_data_end - 4 - decompressed kernel의 길이가 담겨 있는 곳의 주소
+ * r11 : _got_start
+ * r12 : _got_end
+ * r13 : sp
+ */
+
 restart:	adr	r0, LC0
 		ldmia	r0, {r1, r2, r3, r6, r10, r11, r12}
+
+/* IAMROOT-14E:
+ * ------
+ * TODO:
+ * 1. 왜 sp는 ldmia로 값을 불러들이지 않는지?
+ * 2. ODROID는 Little endian 인지 Big endian인지
+ */
 		ldr	sp, [r0, #28]
 
 		/*
@@ -412,6 +432,12 @@ restart:	adr	r0, LC0
 		 */
 		mov	r10, r6
 #endif
+
+/* IAMROOT-14E:
+ * ------
+ * TODO:
+ * GOT : Global Offset Table
+ */
 
 		mov	r5, #0			@ init dtb size to 0
 #ifdef CONFIG_ARM_APPENDED_DTB
@@ -1621,5 +1647,12 @@ ENDPROC(efi_stub_entry)
 
 		.align
 		.section ".stack", "aw", %nobits
+
+/* IAMROOT-14E:
+ * ------
+ * TODO:
+ * Label명이 .로 시작하면 ARM Directive로 보는게 맞는가?
+ */
+
 .L_user_stack:	.space	4096
 .L_user_stack_end:
