@@ -39,6 +39,19 @@
 #error KERNEL_RAM_VADDR must start at 0xXXXX8000
 #endif
 
+
+/* IAMROOT-14E:
+ * ------
+ * TODO:
+ * 1. LPAE 관련 Further Readings
+ * https://elinux.org/images/6/6a/Elce11_marinas.pdf
+ * 2. LPAE가 없는 경우에 1차 페이지테이블이 16KB(0x400Bytes) 임을 증명
+ * 3. LPAE가 있는 경우에 1차 페이지테이블이 0x500Bytes 임을 증명
+ * 4. 현재 구성하고 있는 Page table이 ARM Core에서 Walk하기 위한 Page table인가? (맞을 듯)
+ * - Page table은 두 종류가 있는 것 같음 : CPU(ARM)단에서 관리하는 Page table과 Kernel단에서 관리하는 Page table
+ */
+
+
 #ifdef CONFIG_ARM_LPAE
 	/* LPAE requires an additional page for the PGD */
 #define PG_DIR_SIZE	0x5000
@@ -495,6 +508,14 @@ ENTRY(__turn_mmu_on)
 	instr_sync
 	mov	r3, r3
 	mov	r3, r13
+
+/* IAMROOT-14E:
+ * ------
+ * TODO:
+ * 왜 mov pc, r3이 아니라 ret r3인지?
+ * ret instruction은 존재하지 않는 거 같은데.. 32bit...
+ */
+
 	ret	r3
 __turn_mmu_on_end:
 ENDPROC(__turn_mmu_on)
