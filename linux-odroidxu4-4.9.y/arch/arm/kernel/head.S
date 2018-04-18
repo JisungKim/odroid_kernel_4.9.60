@@ -118,6 +118,14 @@ ENTRY(stext)
 	blo	__error_lpae			@ only classic page table format
 #endif
 
+/* IAMROOT-14E:
+ * ------
+ * 3/7
+ * TODO:
+ * 레이블의 가상 주소를 얻어오는 명령어가 있는가?
+ * 내지는 예를 들어 adr은 MMU On 상태에서 가상주소를 리턴하는가?
+ */
+
 #ifndef CONFIG_XIP_KERNEL
 	adr	r3, 2f
 	ldmia	r3, {r4, r8}
@@ -135,6 +143,16 @@ ENTRY(stext)
 #ifdef CONFIG_SMP_ON_UP
 	bl	__fixup_smp
 #endif
+
+/* IAMROOT-14E:
+ * ------
+ * 18 APR 18
+ * TODO:
+ * 1. 커널 영역에서 lowmem 영역은 어디를 말하는지?
+ * 2. Scatter-gather-table
+ * 3. Kernel code가 아래에 있지 않고 위에 있을 경우 코드를 깨지는 않을까?
+ */
+
 #ifdef CONFIG_ARM_PATCH_PHYS_VIRT
 	bl	__fixup_pv_table
 #endif
@@ -629,7 +647,7 @@ __fixup_pv_table:
 	adr	r0, 1f
 	ldmia	r0, {r3-r7}
 	mvn	ip, #0
-	subs	r3, r0, r3	@ PHYS_OFFSET - PAGE_OFFSET
+	subs	r3, r0, r3	@ PHYS_OFFSET - PAGE_OFFSET / PV OFFSET으로 보임.
 	add	r4, r4, r3	@ adjust table start address
 	add	r5, r5, r3	@ adjust table end address
 	add	r6, r6, r3	@ adjust __pv_phys_pfn_offset address
@@ -696,6 +714,12 @@ ARM_BE8(rev16	ip, ip)
 	bx	lr
 #else
 #ifdef CONFIG_CPU_ENDIAN_BE8
+
+/* IAMROOT-14E:
+ * ------
+ * 18 APR 18 여기까지
+ */
+
 	moveq	r0, #0x00004000	@ set bit 22, mov to mvn instruction
 #else
 	moveq	r0, #0x400000	@ set bit 22, mov to mvn instruction
