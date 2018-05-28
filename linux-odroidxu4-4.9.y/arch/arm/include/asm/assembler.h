@@ -192,6 +192,13 @@
  */
 	.irp	c,,eq,ne,cs,cc,mi,pl,vs,vc,hi,ls,ge,lt,gt,le,hs,lo
 	.macro	badr\c, rd, sym
+
+/* IAMROOT-14E:
+ * ------
+ * TODO:
+ * 왜 THUMB2는 sym +1을 하는지? +2도 아니고...
+ */
+
 #ifdef CONFIG_THUMB2_KERNEL
 	adr\c	\rd, \sym + 1
 #else

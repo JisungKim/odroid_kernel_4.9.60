@@ -217,6 +217,14 @@ __create_page_tables:
 	mov	r0, r4
 	mov	r3, #0
 	add	r6, r0, #PG_DIR_SIZE
+
+/* IAMROOT-14E:
+ * ------
+ * TODO:
+ * str을 연속으로 4번 쓰는 이유? 캐시때문에? (128bit)
+ * Pipeline이 깨지기 때문에?
+ */
+
 1:	str	r3, [r0], #4
 	str	r3, [r0], #4
 	str	r3, [r0], #4
@@ -307,6 +315,13 @@ __create_page_tables:
 	 * Then map boot params address in r2 if specified.
 	 * We map 2 sections in case the ATAGs/DTB crosses a section boundary.
 	 */
+
+/* IAMROOT-14E:
+ * ------
+ * TODO:
+ * H/W Page table과 S/W Page table의 차이, 실제 존재여부, 왜 두개 관리하냐(??)
+ */
+
 	mov	r0, r2, lsr #SECTION_SHIFT
 	movs	r0, r0, lsl #SECTION_SHIFT
 	subne	r3, r0, r8
@@ -382,6 +397,11 @@ __create_page_tables:
 #ifdef CONFIG_ARM_LPAE
 	sub	r4, r4, #0x1000		@ point to the PGD table
 #endif
+
+/* IAMROOT-14E:
+ * ------
+ * ret 기본은 ret lr. (lr에 있는 주소로 돌아간다.)
+ */
 	ret	lr
 ENDPROC(__create_page_tables)
 	.ltorg
