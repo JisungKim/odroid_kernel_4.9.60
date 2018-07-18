@@ -186,6 +186,13 @@ ENTRY(stext)
 #else
 	mov	r8, r4				@ set TTBR1 to swapper_pg_dir
 #endif
+
+/* IAMROOT-14E:
+ * ------
+ * TODO:
+ * 왜 굳이 INITFUNC와의 차이를 넣어두고 더하는 작업을 무단히 하는지
+ */
+
 	ldr	r12, [r10, #PROCINFO_INITFUNC]
 	add	r12, r12, r10
 	ret	r12
