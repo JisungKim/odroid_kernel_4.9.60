@@ -1921,6 +1921,12 @@ void __init boot_cpu_init(void)
 {
 	int cpu = smp_processor_id();
 
+/* IAMROOT-14E:
+ * ------
+ * TODO:
+ * online, active, present, possible 이 각각 어떤 상태를 의미하는지?
+ */
+
 	/* Mark the boot cpu "present", "online" etc for SMP and UP case */
 	set_cpu_online(cpu, true);
 	set_cpu_active(cpu, true);

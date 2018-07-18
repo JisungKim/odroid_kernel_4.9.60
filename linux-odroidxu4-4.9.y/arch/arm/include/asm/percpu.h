@@ -23,6 +23,12 @@
 #if defined(CONFIG_SMP) && !defined(CONFIG_CPU_V6)
 static inline void set_my_cpu_offset(unsigned long off)
 {
+
+/* IAMROOT-14E:
+ * ------
+ * PL1 : Privilege Level 1 - 커널 모드
+ */
+
 	/* Set TPIDRPRW */
 	asm volatile("mcr p15, 0, %0, c13, c0, 4" : : "r" (off) : "memory");
 }

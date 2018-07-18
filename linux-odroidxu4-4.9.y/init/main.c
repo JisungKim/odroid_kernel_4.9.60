@@ -491,6 +491,12 @@ asmlinkage __visible void __init start_kernel(void)
 
 	cgroup_init_early();
 
+/* IAMROOT-14E:
+ * ------
+ * TODO:
+ * 왜 irq disable 을 지금 시점에 하는지?
+ */
+
 	local_irq_disable();
 	early_boot_irqs_disabled = true;
 
@@ -500,6 +506,12 @@ asmlinkage __visible void __init start_kernel(void)
  */
 	boot_cpu_init();
 	page_address_init();
+
+/* IAMROOT-14E:
+ * ------
+ * 7/18 여기까지
+ */
+
 	pr_notice("%s", linux_banner);
 	setup_arch(&command_line);
 	mm_init_cpumask(&init_mm);

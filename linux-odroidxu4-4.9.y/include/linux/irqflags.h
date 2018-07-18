@@ -117,6 +117,11 @@
 
 #else /* !CONFIG_TRACE_IRQFLAGS */
 
+/* IAMROOT-14E:
+ * ------
+ * DO-WHILE문 사이에 명령어를 넣는건 묶기 위함임 / 안 그러면 에러.
+ */
+
 #define local_irq_enable()	do { raw_local_irq_enable(); } while (0)
 #define local_irq_disable()	do { raw_local_irq_disable(); } while (0)
 #define local_irq_save(flags)					\
