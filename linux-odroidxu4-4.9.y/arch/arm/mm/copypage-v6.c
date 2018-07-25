@@ -42,6 +42,14 @@ static void v6_copy_user_highpage_nonaliasing(struct page *to,
 	kunmap_atomic(kfrom);
 }
 
+/* IAMROOT-14E:
+ * ------
+ * TODO:
+ * * 여기서 aliasing과 existing mapping of this page의 의미는?
+ * aliasing - http://blog.daum.net/risinsun2/15
+ * * 왜 현재 상태에서는 aliasing이 없다고 말하는건가?
+ */
+
 /*
  * Clear the user page.  No aliasing to deal with so we can just
  * attack the kernel's existing mapping of this page.

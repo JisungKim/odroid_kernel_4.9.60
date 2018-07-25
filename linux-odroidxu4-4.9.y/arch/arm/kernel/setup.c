@@ -703,6 +703,14 @@ static void __init setup_processor(void)
 #ifdef MULTI_CPU
 	processor = *list->proc;
 #endif
+
+/* IAMROOT-14E:
+ * ------
+ * TODO:
+ * MULTI_TLB는 여러개의 TLB를 이야기하는 것 같은데, 굳이 여러개가 있을 필요가 있나?
+ * Translation lookaside buffer, wikipedia 참고.
+ */
+
 #ifdef MULTI_TLB
 	cpu_tlb = *list->tlb;
 #endif
@@ -712,6 +720,11 @@ static void __init setup_processor(void)
 #ifdef MULTI_CACHE
 	cpu_cache = *list->cache;
 #endif
+
+/* IAMROOT-14E:
+ * ------
+ * cr : Control register
+ */
 
 	pr_info("CPU: %s [%08x] revision %d (ARMv%s), cr=%08lx\n",
 		cpu_name, read_cpuid_id(), read_cpuid_id() & 15,
@@ -732,6 +745,12 @@ static void __init setup_processor(void)
 #ifdef CONFIG_MMU
 	init_default_cache_policy(list->__cpu_mm_mmu_flags);
 #endif
+
+/* IAMROOT-14E:
+ * ------
+ * 7/25 스터디 끝
+ */
+
 	erratum_a15_798181_init();
 
 	elf_hwcap_fixup();
@@ -1077,6 +1096,13 @@ void __init setup_arch(char **cmdline_p)
 	const struct machine_desc *mdesc;
 
 	setup_processor();
+
+
+/* IAMROOT-14E:
+ * ------
+ * 7/25 여기까지
+ */
+
 	mdesc = setup_machine_fdt(__atags_pointer);
 	if (!mdesc)
 		mdesc = setup_machine_tags(__atags_pointer, __machine_arch_type);
